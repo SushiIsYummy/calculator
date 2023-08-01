@@ -1,18 +1,160 @@
 let displayValue = 0;
-let total = 0;
+// let total = 0;
 
 let number1 = 0;
 let operator = "";
 let number2 = 0;
 
+const FIRST_NUMBER = "firstNumber";
+const SECOND_NUMBER = "secondNumber";
+const BUTTON_NUMBER = "number";
+const BUTTON_OPERATOR = "operator";
+const BUTTON_EQUAL = "equal";
+
 let lastValidButtonPress = "";
 let number1Exists = false;
 let number2Exists = false;
-let calculatedOnePair = false;
-let mostRecentNonNumber = "";
+// let calculatedOnePair = false;
+// let mostRecentNonNumber = "";
 
 const displayContent = document.querySelector('#display-content');
 changeDisplayContent(displayValue);
+
+function numberClick(input) {
+    if (lastValidButtonPress === BUTTON_EQUAL) {
+        lastValidButtonPress = BUTTON_NUMBER;
+        clearDisplay();
+        number1 = parseInt(input);
+        displayValue = number1;
+        changeDisplayContent(displayValue);
+        return;
+    }
+
+    if (!number1Exists) {
+        lastValidButtonPress = BUTTON_NUMBER;
+        if (displayValue === 0) {
+            displayValue = parseInt(input);
+            changeDisplayContent(displayValue);
+        } else {
+            displayValue = displayValue*10 + parseInt(input);
+            changeDisplayContent(displayValue);
+        }
+        return;
+    } else if (number1Exists) {
+        lastValidButtonPress = BUTTON_NUMBER;
+        if (!number2Exists) {
+            displayValue = parseInt(input);
+            changeDisplayContent(displayValue);
+            number2Exists = true;
+        } else if (displayValue === 0) {
+            displayValue = parseInt(input);
+            changeDisplayContent(displayValue);
+        } else if (displayValue < 0 || displayValue > 0) {
+            displayValue = displayValue*10 + parseInt(input);
+            changeDisplayContent(displayValue);
+        }
+        number2 = displayValue;
+        return;
+    } 
+}
+
+function operatorClick(input) {
+    // repeated operator clicks replaces the operator
+    if ((lastValidButtonPress === BUTTON_OPERATOR || lastValidButtonPress === BUTTON_EQUAL)
+        && !number2Exists) {
+        lastValidButtonPress = BUTTON_OPERATOR;
+        operator = input;
+        return;
+    }
+
+    if (operator === "") {
+        lastValidButtonPress = BUTTON_OPERATOR;
+        number1 = displayValue;
+        number1Exists = true;
+        operator = input;
+        return;
+    } 
+
+    if (operator !== "" && number2Exists) {
+        number1 = operate(operator, number1, number2);
+        operator = input;
+        displayValue = number1;
+        changeDisplayContent(displayValue);
+        number2Exists = false;
+        number2 = 0;
+        lastValidButtonPress = BUTTON_OPERATOR;
+        return;
+    }
+}
+
+function equalClick() {
+    if (number1Exists && number2Exists) {
+        lastValidButtonPress = BUTTON_EQUAL;
+        number1 = operate(operator, number1, number2);
+        number2Exists = false;
+        number2 = 0;
+        displayValue = number1;
+        changeDisplayContent(displayValue);
+    }
+}
+
+function deleteDigit() {
+    if (displayValue >= 10) {
+        displayValue = Math.floor(displayValue/10);
+    } else {
+        displayValue = 0;
+    }
+    if (number1Exists) {
+        number1 = displayValue;
+    } else if (number2Exists) {
+        number2 = displayValue;
+    }
+    changeDisplayContent(displayValue);
+}
+
+function clearDisplay() {
+    displayValue = 0;
+    // total = 0;
+    number1 = 0;
+    operator = "";
+    number2 = 0;
+    lastValidButtonPress = "";
+    number1Exists = false;
+    number2Exists = false;
+    // calculatedOnePair = false;
+    // mostRecentNonNumber = "";
+    changeDisplayContent(displayValue);
+}
+
+function decimalClick() {
+    // displayValue = parseFloat(displayValue.toFixed(1));
+    // changeDisplayContent(displayValue);
+}
+
+function changeSign() {
+    displayValue *= -1;
+    if (number2Exists) {
+        number2 = displayValue;
+    } else {
+        number1 = displayValue;
+    }
+    changeDisplayContent(displayValue);
+}
+
+function operate(operator, a, b) {
+    switch (operator) {
+        case "+":
+            return add(a, b);
+        case "-":
+            return subtract(a, b);
+        case "*":
+            return multiply(a, b);
+        case "/":
+            return divide(a, b);
+        case "%":
+            return modulus(a, b);
+    }
+}
 
 function add(a, b) {
     return a + b;
@@ -36,166 +178,6 @@ function divide(a, b) {
 
 function modulus(a, b) {
     return a % b;
-}
-
-function numberClick(input) {
-    if (lastValidButtonPress === "equal") {
-        lastValidButtonPress = "number";
-        displayValue = displayValue*10 + parseInt(input);
-        changeDisplayContent(displayValue);
-        number1 = displayValue;
-        return;
-    }
-
-    if (lastValidButtonPress === "operator") {
-        lastValidButtonPress = "number";
-        displayValue = parseInt(input);
-        changeDisplayContent(displayValue);
-        number2 = displayValue;
-        number2Exists = true;
-        return;
-    }
-
-    if (displayValue === 0) {
-        lastValidButtonPress = "number";
-        displayValue = parseInt(input);
-    } else {
-        lastValidButtonPress = "number";
-        displayValue = displayValue*10 + parseInt(input);
-    }
-    changeDisplayContent(displayValue);
-}
-
-function operatorClick(input) {
-    if (lastValidButtonPress === "number" && input != "=") {
-        if (number2Exists) {
-            displayValue = operate(operator, number1, number2);
-            changeDisplayContent(displayValue);
-            number1 = displayValue;
-            number2Exists = false;
-            number2 = 0;
-            calculatedOnePair = true;
-            lastValidButtonPress = "operator";
-            mostRecentNonNumber = input;
-            operator = input;
-            return;
-        }
-    }
-
-    // sequential operator button clicks replace the operator
-    if (operator !== "" && lastValidButtonPress === "operator") {
-        operator = input;
-        lastValidButtonPress = "operator";
-        mostRecentNonNumber = input;
-        return;
-    }
-
-    if (operator === "") {
-        if (mostRecentNonNumber === "=") {
-            operator = input;
-            lastValidButtonPress = "operator";
-            mostRecentNonNumber = input;
-
-            return;
-        }
-        if (calculatedOnePair) {
-            lastValidButtonPress = "operator";
-            mostRecentNonNumber = input;
-            number2 = parseInt(displayContent.textContent);
-            return;
-        } else {
-            lastValidButtonPress = "operator";
-            mostRecentNonNumber = input;
-            number1 = displayValue;
-            operator = input;
-            return;
-        }
-    }
-
-    if (input === "=") {
-        if (number2Exists) {
-            number2 = parseInt(displayContent.textContent);
-            total = operate(operator, number1, number2);
-            // console.log('total: ' + total);
-            displayValue = total;
-            changeDisplayContent(total);
-            number1 = total;
-            number2Exists = false;
-            number2 = 0;
-            operator = "";
-            calculatedOnePair = true;
-            lastValidButtonPress = "equal";
-            mostRecentNonNumber = input;
-            return;
-        } else if (operator === "" && !number2Exists) {
-            return;
-        }
-    }
-
-    if (lastValidButtonPress === "operator" && input !== "=") {
-        operator = input;
-        return;
-    }
-
-
-    if (operator !== "" && number2Exists) {
-        displayValue = total;
-        number2Exists = false;
-        number1 = total;
-        number2 = 0;
-        return;
-    }
-    
-}
-
-function deleteDigit() {
-    if (displayValue >= 10) {
-        displayValue = Math.floor(displayValue/10);
-    } else {
-        displayValue = 0;
-    }
-    number1 = displayValue;
-    changeDisplayContent(displayValue);
-}
-
-function clearDisplay() {
-    displayValue = 0;
-    total = 0;
-    number1 = 0;
-    operator = "";
-    number2 = 0;
-    lastValidButtonPress = "";
-    number1Exists = false;
-    number2Exists = false;
-    calculatedOnePair = false;
-    mostRecentNonNumber = "";
-    changeDisplayContent(displayValue);
-}
-
-function decimalClick() {
-    displayValue = parseFloat(displayValue.toFixed(1));
-    changeDisplayContent(displayValue);
-}
-
-function changeSign() {
-    displayValue *= -1;
-    number1 = displayValue;
-    changeDisplayContent(displayValue);
-}
-
-function operate(operator, a, b) {
-    switch (operator) {
-        case "+":
-            return add(a, b);
-        case "-":
-            return subtract(a, b);
-        case "*":
-            return multiply(a, b);
-        case "/":
-            return divide(a, b);
-        case "%":
-            return modulus(a, b);
-    }
 }
 
 function changeDisplayContent(content) {
