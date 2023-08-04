@@ -1,5 +1,6 @@
 let displayValue = 0;
-// let total = 0;
+let displayValueDecimal = "";
+let upperDisplayValue = "";
 
 let number1 = 0;
 let operator = "";
@@ -14,14 +15,26 @@ const BUTTON_EQUAL = "equal";
 let lastValidButtonPress = "";
 let number1Exists = false;
 let number2Exists = false;
-// let calculatedOnePair = false;
-// let mostRecentNonNumber = "";
 
 const displayContent = document.querySelector('#display-content');
+const upperDisplayContent = document.querySelector('#upper-display-content');
 changeDisplayContent(displayValue);
 
 function numberClick(input) {
+    if (displayValue === "ERROR") {
+        clearDisplay();
+        displayContent.style.color = "black";
+    }
+
+    if (displayValueDecimal.includes(".") && (!number1Exists || number2Exists)) {
+        displayValueDecimal = displayValueDecimal + input;
+        displayValue = parseFloat(displayValueDecimal);
+        changeDisplayContent(displayValue);
+        return;
+    }
+
     if (lastValidButtonPress === BUTTON_EQUAL) {
+        changeUpperDisplayContent("");
         lastValidButtonPress = BUTTON_NUMBER;
         clearDisplay();
         number1 = parseInt(input);
@@ -42,8 +55,14 @@ function numberClick(input) {
         return;
     } else if (number1Exists) {
         lastValidButtonPress = BUTTON_NUMBER;
+        removeActiveOperator();
         if (!number2Exists) {
-            displayValue = parseInt(input);
+            if (displayValueDecimal != "") {
+                displayValue = parseInt(input);
+            } else {
+                displayValue = parseFloat(input);
+            }
+            displayContent.style.color = "black";
             changeDisplayContent(displayValue);
             number2Exists = true;
         } else if (displayValue === 0) {
@@ -59,37 +78,60 @@ function numberClick(input) {
 }
 
 function operatorClick(input) {
+    if (displayValue === "ERROR") {
+        return;
+    }
+
     // repeated operator clicks replaces the operator
     if ((lastValidButtonPress === BUTTON_OPERATOR || lastValidButtonPress === BUTTON_EQUAL)
         && !number2Exists) {
         lastValidButtonPress = BUTTON_OPERATOR;
         operator = input;
+        displayValueDecimal = "";
+        displayContent.style.color = "#C0C0C0";
+        changeUpperDisplayContent(number1 + " " + operator);
         return;
     }
 
     if (operator === "") {
         lastValidButtonPress = BUTTON_OPERATOR;
+        displayValueDecimal = "";
         number1 = displayValue;
         number1Exists = true;
         operator = input;
+        changeUpperDisplayContent(number1 + " " + operator);
+        displayContent.style.color = "#C0C0C0";
         return;
     } 
 
     if (operator !== "" && number2Exists) {
+        number2 = displayValue;
         number1 = operate(operator, number1, number2);
         operator = input;
         displayValue = number1;
+        if (number1 === "ERROR") {
+            changeDisplayContent("ERROR");
+            changeUpperDisplayContent("");
+            removeActiveOperator();
+            return;   
+        }
         changeDisplayContent(displayValue);
         number2Exists = false;
         number2 = 0;
+        displayValueDecimal = "";
         lastValidButtonPress = BUTTON_OPERATOR;
+        displayContent.style.color = "#C0C0C0";
+        changeUpperDisplayContent(number1 + " " + operator);
         return;
     }
 }
 
 function equalClick() {
     if (number1Exists && number2Exists) {
+        removeActiveOperator();
         lastValidButtonPress = BUTTON_EQUAL;
+        number2 = displayValue;
+        changeUpperDisplayContent(number1 + " " + operator + " " + number2 + " =");
         number1 = operate(operator, number1, number2);
         number2Exists = false;
         number2 = 0;
@@ -99,39 +141,78 @@ function equalClick() {
 }
 
 function deleteDigit() {
+    if (displayValue === "ERROR") {
+        return;
+    }
+    if (lastValidButtonPress === "equal") {
+        clearDisplay();
+        return;
+    }
+    if (displayValueDecimal.includes(".")) {
+        displayValueDecimal = displayValueDecimal.slice(0, displayValueDecimal.length-1);
+        displayValue = parseFloat(displayValueDecimal);
+        if (Number.isInteger(displayValue)) {
+            changeDisplayContent(displayValueDecimal);
+        } else {
+            changeDisplayContent(displayValue);
+        }
+        return;
+    }
     if (displayValue >= 10) {
         displayValue = Math.floor(displayValue/10);
+        changeDisplayContent(displayValue);
+        return;
     } else {
         displayValue = 0;
+        changeDisplayContent(displayValue);
+        return;
     }
-    if (number1Exists) {
-        number1 = displayValue;
-    } else if (number2Exists) {
-        number2 = displayValue;
-    }
-    changeDisplayContent(displayValue);
+
+    // if (number1Exists) {
+    //     number1 = displayValue;
+    // } else if (number2Exists) {
+    //     number2 = displayValue;
+    // }
+    // changeDisplayContent(displayValue);
 }
 
 function clearDisplay() {
     displayValue = 0;
-    // total = 0;
+    upperDisplayValue = "";
     number1 = 0;
     operator = "";
     number2 = 0;
     lastValidButtonPress = "";
     number1Exists = false;
     number2Exists = false;
-    // calculatedOnePair = false;
-    // mostRecentNonNumber = "";
+    displayValueDecimal = "";
+    displayContent.style.color = "black";
+    removeActiveOperator();
     changeDisplayContent(displayValue);
+    changeUpperDisplayContent("");
 }
 
 function decimalClick() {
-    // displayValue = parseFloat(displayValue.toFixed(1));
-    // changeDisplayContent(displayValue);
+    if (displayValue === "ERROR") {
+        return;
+    }
+    if (lastValidButtonPress === "operator") {
+        return;
+    }
+    if (displayValueDecimal.includes(".")) {
+        return;
+    }
+    displayValueDecimal = displayValue + ".";
+    changeDisplayContent(displayValueDecimal);
 }
 
 function changeSign() {
+    if (displayValue === "ERROR") {
+        return;
+    }
+    if (lastValidButtonPress === "operator") {
+        return;
+    }
     displayValue *= -1;
     if (number2Exists) {
         number2 = displayValue;
@@ -165,7 +246,9 @@ function subtract(a, b) {
 }
 
 function multiply(a, b) {
-    return a*b;
+    let numberOfDecimalsA = a.countDecimals();
+    let numberOfDecimalsB = b.countDecimals();
+    return parseFloat((a*b).toFixed(numberOfDecimalsA + numberOfDecimalsB));
 }
 
 function divide(a, b) {
@@ -173,7 +256,7 @@ function divide(a, b) {
     if (b === 0) {
         return "ERROR";
     }
-    return a/b;
+    return a / b;
 }
 
 function modulus(a, b) {
@@ -182,4 +265,45 @@ function modulus(a, b) {
 
 function changeDisplayContent(content) {
     displayContent.textContent = content;
+}
+
+function changeUpperDisplayContent(content) {
+    upperDisplayContent.textContent = content;
+}
+
+// code used from 
+// https://stackoverflow.com/questions/17369098/simplest-way-of-getting-the-number-of-decimals-in-a-number-in-javascript
+// count number of decimals in a number
+Number.prototype.countDecimals = function () {
+
+    if (Math.floor(this.valueOf()) === this.valueOf()) return 0;
+
+    var str = this.toString();
+    if (str.indexOf(".") !== -1 && str.indexOf("-") !== -1) {
+        return str.split("-")[1] || 0;
+    } else if (str.indexOf(".") !== -1) {
+        return str.split(".")[1].length || 0;
+    }
+    return str.split("-")[1] || 0;
+}
+
+let operatorButtons = document.querySelectorAll('.operator');
+
+for (let i = 0; i < operatorButtons.length; i++) {
+    operatorButtons[i].addEventListener('click', setActiveOperator);
+}
+
+function setActiveOperator(e) {
+    if (displayValue != "ERROR") {
+        for (let i = 0; i < operatorButtons.length; i++) {
+            operatorButtons[i].classList.remove('active');    
+        }
+        e.target.classList.add('active');
+    }
+}
+
+function removeActiveOperator() {
+    for (let i = 0; i < operatorButtons.length; i++) {
+        operatorButtons[i].classList.remove('active');    
+    }
 }

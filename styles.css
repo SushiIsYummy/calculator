@@ -19,16 +19,32 @@
   
 #display {
     display: flex;
-    justify-content: flex-end;
+    flex-direction: column;
+    /* justify-content: flex-end; */
     grid-column: 1 / span 4;
     background-color: #f0f0f0;
-    text-align: center;
+    /* text-align: center;
     padding: 20px;
+    padding-top: 0px; */
+}
+
+#upper-display-content {
+    display: flex;
+    justify-content: flex-end;
+    color: gray;
+    font-size: 15px;
+    min-height: 1em;
+    padding: 5px;
+    padding-right: 10px;
 }
 
 #display-content {
+    display: flex;
+    justify-content: flex-end;
     font-size: 35px;
     min-height: 1em;
+    padding: 10px;
+    padding-top: 0px;
 }
 
 .item {
@@ -39,7 +55,19 @@
     border-color: red;
 }
 
+.item:hover {
+    background-color: #CECECE;
+}
+
 .item:active {
     background-color: #A0A0A0;
 }
-  
+
+.active {
+    background-color: #A0A0A0;
+}
+
+.operator {
+    border-color: blue;
+    color: blue;
+}

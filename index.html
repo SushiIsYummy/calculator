@@ -11,29 +11,30 @@
     <div class="center-container">
         <div class="container">
             <div id="display">
+                <div id="upper-display-content"></div>
                 <div id="display-content"></div>
             </div>
             <button id="clear" class="item" onclick="clearDisplay()">clear</button>
             <button id="plus-minus" class="item" onclick="changeSign()">+/-</button>
-            <button id="modulus" class="item" value="%" onclick="operatorClick(this.value)">%</button>
             <button id="backspace" class="item" onclick="deleteDigit()">back</button>
+            <button id="modulus" class="item operator" value="%" onclick="operatorClick(this.value)">%</button>
 
             <button id="seven" class="item" value="7" onclick="numberClick(this.value)">7</button>
             <button id="eight" class="item" value="8" onclick="numberClick(this.value)">8</button>
             <button id="nine"  class="item" value="9" onclick="numberClick(this.value)">9</button>
-            <button id="divide" class="item" value="/" onclick="operatorClick(this.value)">/</button>
+            <button id="divide" class="item operator" value="/" onclick="operatorClick(this.value)">/</button>
             <button id="four"  class="item" value="4" onclick="numberClick(this.value)">4</button>
             <button id="five"  class="item" value="5" onclick="numberClick(this.value)">5</button>
             <button id="six"   class="item" value="6" onclick="numberClick(this.value)">6</button>
-            <button id="multiply" class="item" value="*" onclick="operatorClick(this.value)">x</button>
+            <button id="multiply" class="item operator" value="*" onclick="operatorClick(this.value)">x</button>
             <button id="one"   class="item" value="1" onclick="numberClick(this.value)">1</button>
             <button id="two"   class="item" value="2" onclick="numberClick(this.value)">2</button>
             <button id="three" class="item" value="3" onclick="numberClick(this.value)">3</button>
-            <button id="subtract" class="item" value="-" onclick="operatorClick(this.value)">-</button>
+            <button id="subtract" class="item operator" value="-" onclick="operatorClick(this.value)">-</button>
             <button id="zero"   class="item" value="0" onclick="numberClick(this.value)">0</button>
             <button id="dot"   class="item" value="." onclick="decimalClick()">.</button>
             <button id="equal"   class="item" value="=" onclick="equalClick(this.value)">=</button>
-            <button id="add"   class="item" value="+" onclick="operatorClick(this.value)">+</button>
+            <button id="add"   class="item operator" value="+" onclick="operatorClick(this.value)">+</button>
         </div>
     </div>
       
